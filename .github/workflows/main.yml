@@ -1,51 +1,91 @@
-name: Release Obsidian Plugin
+name: Build & Release Obsidian BRAT Plugin
 
-# 트리거: Tag가 푸시될 때 (예: 0.1.0)
 on:
   push:
     tags:
-      - '*'
+      - "*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.1 or 0.1.1)"
+        required: true
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 코드 체크아웃
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # 2. Node.js 설치
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "20"
+          cache: npm
 
-      # 3. 의존성 설치
       - name: Install dependencies
-        run: npm install
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          else
+            echo "No npm lockfile found; falling back to npm install"
+            npm install
+          fi
 
-      # 4. TypeScript → JavaScript 빌드
-      - name: Build plugin
+      - name: Build
         run: npm run build
 
-      # 5. manifest.json 버전 확인
-      - name: Get version from manifest
-        id: version
+      - name: Validate BRAT release files
         run: |
-          echo "version=$(node -p "require('./manifest.json').version")" >> $GITHUB_OUTPUT
+          test -f manifest.json
+          test -f main.js
+          test -f styles.css
+          test -f versions.json
 
-      # 6. GitHub Release 생성 + 파일 업로드
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Read plugin version
+        id: plugin_version
+        run: |
+          echo "version=$(node -p \"require('./manifest.json').version\")" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve release tag
+        id: release_tag
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            RAW_TAG="${{ github.event.inputs.tag }}"
+          else
+            RAW_TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=${RAW_TAG}" >> "$GITHUB_OUTPUT"
+          echo "normalized=${RAW_TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag matches manifest version
+        run: |
+          TAG="${{ steps.release_tag.outputs.normalized }}"
+          VERSION="${{ steps.plugin_version.outputs.version }}"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "Tag version ($TAG) does not match manifest version ($VERSION)." >&2
+            exit 1
+          fi
+
+      - name: Package release zip
+        run: |
+          mkdir -p dist
+          zip -j "dist/novel-helper-${{ steps.plugin_version.outputs.version }}.zip" \
+            manifest.json main.js styles.css versions.json
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          name: Novel Helper v${{ steps.plugin_version.outputs.version }}
+          generate_release_notes: true
           files: |
-            main.js
             manifest.json
+            main.js
             styles.css
-          tag_name: ${{ steps.version.outputs.version }}
-          name: Release ${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            versions.json
+            dist/novel-helper-${{ steps.plugin_version.outputs.version }}.zip

@@ -1,7 +1,7 @@
 {
   "id": "novel-helper",
   "name": "Novel Helper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.5.0",
   "description": "Obsidian plugin for AI brainstorming with selected markdown notes.",
   "author": "Novel Helper",

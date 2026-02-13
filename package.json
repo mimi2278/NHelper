@@ -1,0 +1,14 @@
+{
+  "name": "novel-helper",
+  "version": "0.1.0",
+  "description": "Obsidian Novel Helper plugin",
+  "main": "main.js",
+  "scripts": {
+    "build": "tsc -noEmit -skipLibCheck && echo \"Use Obsidian plugin build toolchain in your environment\"",
+    "check": "tsc -noEmit -skipLibCheck"
+  },
+  "devDependencies": {
+    "obsidian": "latest",
+    "typescript": "^5.4.0"
+  }
+}

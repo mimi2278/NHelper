@@ -1,6 +1,17 @@
 name: Build & Release Obsidian BRAT Plugin
 
 on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '배포 환경'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
   push:
     tags:
       - "*"

@@ -1,0 +1,51 @@
+name: Release Obsidian Plugin
+
+# 트리거: Tag가 푸시될 때 (예: 0.1.0)
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Node.js 설치
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3. 의존성 설치
+      - name: Install dependencies
+        run: npm install
+
+      # 4. TypeScript → JavaScript 빌드
+      - name: Build plugin
+        run: npm run build
+
+      # 5. manifest.json 버전 확인
+      - name: Get version from manifest
+        id: version
+        run: |
+          echo "version=$(node -p "require('./manifest.json').version")" >> $GITHUB_OUTPUT
+
+      # 6. GitHub Release 생성 + 파일 업로드
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            main.js
+            manifest.json
+            styles.css
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

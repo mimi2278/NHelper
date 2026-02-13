@@ -50,6 +50,9 @@ class NovelHelperPlugin extends obsidian_1.Plugin {
             callback: () => void this.activateView(),
         });
         this.addSettingTab(new NovelHelperSettingTab(this.app, this));
+        this.app.workspace.onLayoutReady(() => {
+            void this.activateView();
+        });
     }
     onunload() {
         this.app.workspace.detachLeavesOfType(VIEW_TYPE_NOVEL_HELPER);

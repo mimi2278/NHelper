@@ -36,3 +36,13 @@
 - 기본 글꼴: `Pretendard` 우선 (가시성 중심)
 - 색감: 아이보리/연보라 톤을 옵시디언 테마 변수와 `color-mix`로 혼합
 - 테마 변경 시 Obsidian 변수(`--background-*`, `--interactive-accent`)에 반응
+
+
+## BRAT 설치 체크리스트
+
+- `manifest.json`
+- `main.js`
+- `styles.css`
+- `versions.json` (호환 버전 매핑)
+
+위 파일을 저장소 루트에 포함했습니다.

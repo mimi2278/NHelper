@@ -3,12 +3,17 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["DOM", "ES2020"],
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["obsidian"]
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["main.ts"]
+  "include": [
+    "main.ts",
+    "obsidian.d.ts"
+  ]
 }

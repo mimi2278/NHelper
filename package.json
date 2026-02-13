@@ -4,7 +4,7 @@
   "description": "Obsidian Novel Helper plugin",
   "main": "main.js",
   "scripts": {
-    "build": "tsc -noEmit -skipLibCheck && echo \"Use Obsidian plugin build toolchain in your environment\"",
+    "build": "tsc main.ts --module commonjs --target ES2018 --moduleResolution node --esModuleInterop --skipLibCheck --outDir .",
     "check": "tsc -noEmit -skipLibCheck"
   },
   "devDependencies": {

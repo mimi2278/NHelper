@@ -1,3 +1,6 @@
+// @ts-nocheck
+import { Plugin, TFile, Notice } from 'obsidian';
+
 import {
 	App,
 	ItemView,

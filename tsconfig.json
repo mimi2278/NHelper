@@ -4,12 +4,22 @@
     "target": "ES6",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["DOM", "ES2015", "ES2016", "ES2017", "ES2018", "ES2019", "ES2020"],
+    "lib": [
+      "DOM",
+      "ES2015",
+      "ES2016",
+      "ES2017",
+      "ES2018",
+      "ES2019",
+      "ES2020"
+    ],
     "strict": false,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "outDir": ".",
+    "outDir": "build",
     "declaration": true
   },
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts"
+  ]
 }

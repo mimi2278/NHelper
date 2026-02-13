@@ -112,6 +112,10 @@ export default class NovelHelperPlugin extends Plugin {
 		});
 
 		this.addSettingTab(new NovelHelperSettingTab(this.app, this));
+
+		this.app.workspace.onLayoutReady(() => {
+			void this.activateView();
+		});
 	}
 
 	onunload() {

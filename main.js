@@ -1,4 +1,7 @@
-import { ItemView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, TFolder, setIcon, } from "obsidian";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+// @ts-nocheck
+const obsidian_1 = require("obsidian");
 const VIEW_TYPE_NOVEL_HELPER = "novel-helper-view";
 const DEFAULT_PRESET = {
     id: 1,
@@ -30,7 +33,7 @@ const QUICK_ACTIONS = [
     { key: "brainstorming", label: "브레인스토밍" },
     { key: "beatSheet", label: "비트시트" },
 ];
-export default class NovelHelperPlugin extends Plugin {
+class NovelHelperPlugin extends obsidian_1.Plugin {
     constructor() {
         super(...arguments);
         this.settings = DEFAULT_SETTINGS;
@@ -47,13 +50,17 @@ export default class NovelHelperPlugin extends Plugin {
             callback: () => void this.activateView(),
         });
         this.addSettingTab(new NovelHelperSettingTab(this.app, this));
+        this.app.workspace.onLayoutReady(() => {
+            void this.activateView();
+        });
     }
     onunload() {
         this.app.workspace.detachLeavesOfType(VIEW_TYPE_NOVEL_HELPER);
     }
     async activateView() {
+        var _a;
         const { workspace } = this.app;
-        let leaf = workspace.getLeavesOfType(VIEW_TYPE_NOVEL_HELPER)[0] ?? null;
+        let leaf = (_a = workspace.getLeavesOfType(VIEW_TYPE_NOVEL_HELPER)[0]) !== null && _a !== void 0 ? _a : null;
         if (!leaf) {
             leaf = workspace.getRightLeaf(false);
             if (leaf)
@@ -63,13 +70,14 @@ export default class NovelHelperPlugin extends Plugin {
             workspace.revealLeaf(leaf);
     }
     async loadSettings() {
+        var _a, _b;
         const loaded = await this.loadData();
         this.settings = {
             ...DEFAULT_SETTINGS,
             ...loaded,
-            prompts: { ...DEFAULT_PROMPTS, ...(loaded?.prompts ?? {}) },
+            prompts: { ...DEFAULT_PROMPTS, ...((_a = loaded === null || loaded === void 0 ? void 0 : loaded.prompts) !== null && _a !== void 0 ? _a : {}) },
         };
-        if (!this.settings.presets?.length) {
+        if (!((_b = this.settings.presets) === null || _b === void 0 ? void 0 : _b.length)) {
             this.settings.presets = [DEFAULT_PRESET];
             this.settings.activePresetId = DEFAULT_PRESET.id;
         }
@@ -78,7 +86,8 @@ export default class NovelHelperPlugin extends Plugin {
         await this.saveData(this.settings);
     }
 }
-class NovelHelperView extends ItemView {
+exports.default = NovelHelperPlugin;
+class NovelHelperView extends obsidian_1.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         this.messages = [];
@@ -102,10 +111,12 @@ class NovelHelperView extends ItemView {
         this.render();
     }
     get activePreset() {
-        return this.plugin.settings.presets.find((p) => p.id === this.plugin.settings.activePresetId) ?? this.plugin.settings.presets[0];
+        var _a;
+        return (_a = this.plugin.settings.presets.find((p) => p.id === this.plugin.settings.activePresetId)) !== null && _a !== void 0 ? _a : this.plugin.settings.presets[0];
     }
     getPromptText(key) {
-        return this.plugin.settings.prompts[key]?.trim() ?? "";
+        var _a, _b;
+        return (_b = (_a = this.plugin.settings.prompts[key]) === null || _a === void 0 ? void 0 : _a.trim()) !== null && _b !== void 0 ? _b : "";
     }
     render() {
         const root = this.containerEl.children[1];
@@ -130,7 +141,7 @@ class NovelHelperView extends ItemView {
     }
     createIconButton(container, icon, label, onClick) {
         const btn = container.createEl("button", { cls: "novel-helper-icon-btn" });
-        setIcon(btn, icon);
+        (0, obsidian_1.setIcon)(btn, icon);
         btn.ariaLabel = label;
         btn.title = label;
         btn.onclick = onClick;
@@ -205,10 +216,11 @@ class NovelHelperView extends ItemView {
         this.render();
     }
     async saveConversation() {
+        var _a, _b, _c;
         if (!this.messages.length)
             return;
-        const id = this.currentConversationId ?? Date.now();
-        const title = `${this.messages[0]?.content.slice(0, 30) ?? "새 대화"}...`;
+        const id = (_a = this.currentConversationId) !== null && _a !== void 0 ? _a : Date.now();
+        const title = `${(_c = (_b = this.messages[0]) === null || _b === void 0 ? void 0 : _b.content.slice(0, 30)) !== null && _c !== void 0 ? _c : "새 대화"}...`;
         const conversation = {
             id,
             title,
@@ -227,7 +239,7 @@ class NovelHelperView extends ItemView {
         const results = [];
         for (const path of this.selectedFiles) {
             const file = this.app.vault.getAbstractFileByPath(path);
-            if (file instanceof TFile) {
+            if (file instanceof obsidian_1.TFile) {
                 results.push({ name: path, content: await this.app.vault.read(file) });
             }
         }
@@ -237,8 +249,8 @@ class NovelHelperView extends ItemView {
         if (!rawInput.trim())
             return;
         const preset = this.activePreset;
-        if (!preset?.apiKey) {
-            new Notice("API 키를 먼저 설정해주세요.");
+        if (!(preset === null || preset === void 0 ? void 0 : preset.apiKey)) {
+            new obsidian_1.Notice("API 키를 먼저 설정해주세요.");
             return;
         }
         const userMessage = { role: "user", content: rawInput.trim() };
@@ -333,15 +345,16 @@ class NovelHelperView extends ItemView {
         };
     }
     parseResponse(apiType, data) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
         const payload = data;
         if (apiType === "anthropic")
-            return payload?.content?.[0]?.text ?? "응답 파싱 실패";
+            return (_c = (_b = (_a = payload === null || payload === void 0 ? void 0 : payload.content) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.text) !== null && _c !== void 0 ? _c : "응답 파싱 실패";
         if (apiType === "openai")
-            return payload?.choices?.[0]?.message?.content ?? "응답 파싱 실패";
-        return payload?.candidates?.[0]?.content?.parts?.[0]?.text ?? "응답 파싱 실패";
+            return (_g = (_f = (_e = (_d = payload === null || payload === void 0 ? void 0 : payload.choices) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.message) === null || _f === void 0 ? void 0 : _f.content) !== null && _g !== void 0 ? _g : "응답 파싱 실패";
+        return (_o = (_m = (_l = (_k = (_j = (_h = payload === null || payload === void 0 ? void 0 : payload.candidates) === null || _h === void 0 ? void 0 : _h[0]) === null || _j === void 0 ? void 0 : _j.content) === null || _k === void 0 ? void 0 : _k.parts) === null || _l === void 0 ? void 0 : _l[0]) === null || _m === void 0 ? void 0 : _m.text) !== null && _o !== void 0 ? _o : "응답 파싱 실패";
     }
 }
-class ReferencePickerModal extends Modal {
+class ReferencePickerModal extends obsidian_1.Modal {
     constructor(app, plugin, selected, onApply) {
         super(app);
         this.plugin = plugin;
@@ -363,12 +376,12 @@ class ReferencePickerModal extends Modal {
         };
         actions.createEl("button", { text: "적용 / 저장" }).onclick = async () => {
             await this.onApply(new Set(this.tempSelected));
-            new Notice(`참고 파일 ${this.tempSelected.size}개 저장됨`);
+            new obsidian_1.Notice(`참고 파일 ${this.tempSelected.size}개 저장됨`);
             this.close();
         };
     }
     renderNode(container, node, depth) {
-        if (node instanceof TFile) {
+        if (node instanceof obsidian_1.TFile) {
             if (!node.path.endsWith(".md"))
                 return;
             const row = container.createDiv({ cls: "novel-helper-tree-row" });
@@ -384,7 +397,7 @@ class ReferencePickerModal extends Modal {
             row.createSpan({ text: node.path });
             return;
         }
-        if (node instanceof TFolder) {
+        if (node instanceof obsidian_1.TFolder) {
             const childMd = this.getMarkdownFilesInFolder(node).map((f) => f.path);
             const checked = childMd.length > 0 && childMd.every((p) => this.tempSelected.has(p));
             const details = container.createEl("details", { cls: "novel-helper-tree-folder" });
@@ -411,15 +424,15 @@ class ReferencePickerModal extends Modal {
     getMarkdownFilesInFolder(folder) {
         const results = [];
         for (const child of folder.children) {
-            if (child instanceof TFile && child.path.endsWith(".md"))
+            if (child instanceof obsidian_1.TFile && child.path.endsWith(".md"))
                 results.push(child);
-            if (child instanceof TFolder)
+            if (child instanceof obsidian_1.TFolder)
                 results.push(...this.getMarkdownFilesInFolder(child));
         }
         return results;
     }
 }
-class HistoryModal extends Modal {
+class HistoryModal extends obsidian_1.Modal {
     constructor(app, view) {
         super(app);
         this.view = view;
@@ -446,7 +459,7 @@ class HistoryModal extends Modal {
         }
     }
 }
-class PromptTemplateModal extends Modal {
+class PromptTemplateModal extends obsidian_1.Modal {
     constructor(app, plugin, onSaved) {
         super(app);
         this.plugin = plugin;
@@ -457,25 +470,25 @@ class PromptTemplateModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
         contentEl.createEl("h3", { text: "프롬프트 편집" });
-        new Setting(contentEl).setName("Instruction").addTextArea((text) => {
+        new obsidian_1.Setting(contentEl).setName("Instruction").addTextArea((text) => {
             text.setValue(this.plugin.settings.prompts.instruction);
             text.onChange((v) => (this.plugin.settings.prompts.instruction = v));
         });
         for (const action of QUICK_ACTIONS) {
-            new Setting(contentEl).setName(action.label).addTextArea((text) => {
+            new obsidian_1.Setting(contentEl).setName(action.label).addTextArea((text) => {
                 text.setValue(this.plugin.settings.prompts[action.key]);
                 text.onChange((v) => (this.plugin.settings.prompts[action.key] = v));
             });
         }
-        new Setting(contentEl).addButton((btn) => btn.setButtonText("저장").setCta().onClick(async () => {
+        new obsidian_1.Setting(contentEl).addButton((btn) => btn.setButtonText("저장").setCta().onClick(async () => {
             await this.plugin.saveSettings();
-            new Notice("프롬프트 저장 완료");
+            new obsidian_1.Notice("프롬프트 저장 완료");
             this.onSaved();
             this.close();
         }));
     }
 }
-class ApiConfigModal extends Modal {
+class ApiConfigModal extends obsidian_1.Modal {
     constructor(app, plugin, onSaved) {
         super(app);
         this.plugin = plugin;
@@ -486,7 +499,7 @@ class ApiConfigModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
         contentEl.createEl("h3", { text: "API 설정" });
-        new Setting(contentEl).setName("활성 프리셋").addDropdown((dropdown) => {
+        new obsidian_1.Setting(contentEl).setName("활성 프리셋").addDropdown((dropdown) => {
             for (const p of this.plugin.settings.presets)
                 dropdown.addOption(String(p.id), p.name);
             dropdown.setValue(String(this.plugin.settings.activePresetId));
@@ -499,22 +512,22 @@ class ApiConfigModal extends Modal {
         const preset = this.plugin.settings.presets.find((p) => p.id === this.plugin.settings.activePresetId);
         if (!preset)
             return;
-        new Setting(contentEl).setName("프리셋 이름").addText((t) => t.setValue(preset.name).onChange((v) => (preset.name = v)));
-        new Setting(contentEl).setName("API 타입").addDropdown((d) => {
+        new obsidian_1.Setting(contentEl).setName("프리셋 이름").addText((t) => t.setValue(preset.name).onChange((v) => (preset.name = v)));
+        new obsidian_1.Setting(contentEl).setName("API 타입").addDropdown((d) => {
             d.addOption("anthropic", "Anthropic");
             d.addOption("openai", "OpenAI");
             d.addOption("google", "Google Gemini");
             d.setValue(preset.apiType);
             d.onChange((v) => (preset.apiType = v));
         });
-        new Setting(contentEl).setName("Endpoint").addText((t) => t.setValue(preset.endpoint).onChange((v) => (preset.endpoint = v)));
-        new Setting(contentEl).setName("Model").addText((t) => t.setValue(preset.model).onChange((v) => (preset.model = v)));
-        new Setting(contentEl).setName("API Key").addText((t) => t.setValue(preset.apiKey).onChange((v) => (preset.apiKey = v)));
-        new Setting(contentEl)
+        new obsidian_1.Setting(contentEl).setName("Endpoint").addText((t) => t.setValue(preset.endpoint).onChange((v) => (preset.endpoint = v)));
+        new obsidian_1.Setting(contentEl).setName("Model").addText((t) => t.setValue(preset.model).onChange((v) => (preset.model = v)));
+        new obsidian_1.Setting(contentEl).setName("API Key").addText((t) => t.setValue(preset.apiKey).onChange((v) => (preset.apiKey = v)));
+        new obsidian_1.Setting(contentEl)
             .setName("프리셋 관리")
             .addButton((b) => b.setButtonText("저장").setCta().onClick(async () => {
             await this.plugin.saveSettings();
-            new Notice("API 설정 저장 완료");
+            new obsidian_1.Notice("API 설정 저장 완료");
             this.onSaved();
         }))
             .addExtraButton((b) => b.setIcon("plus").setTooltip("추가").onClick(async () => {
@@ -526,7 +539,7 @@ class ApiConfigModal extends Modal {
         }))
             .addExtraButton((b) => b.setIcon("trash").setTooltip("삭제").onClick(async () => {
             if (this.plugin.settings.presets.length <= 1) {
-                new Notice("최소 1개의 프리셋은 필요합니다.");
+                new obsidian_1.Notice("최소 1개의 프리셋은 필요합니다.");
                 return;
             }
             this.plugin.settings.presets = this.plugin.settings.presets.filter((p) => p.id !== preset.id);
@@ -536,7 +549,7 @@ class ApiConfigModal extends Modal {
         }));
     }
 }
-class NovelHelperSettingTab extends PluginSettingTab {
+class NovelHelperSettingTab extends obsidian_1.PluginSettingTab {
     constructor(app, plugin) {
         super(app, plugin);
         this.plugin = plugin;
